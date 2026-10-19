@@ -1,0 +1,6 @@
+Notatka testowa
+
+Pierwszy akapit z polskimi znakami: zażółć gęślą jaźń.
+Druga linia tego samego akapitu.
+
+Drugi akapit. Łódź, Kraków, Gdańsk.

@@ -1,28 +1,63 @@
 # Uniwersalny konwerter plików
 
-Projekt 1, Programowanie V. Aplikacja desktopowa (Python 3 + Tkinter) do konwersji plików.
+Projekt na Programowanie V.
+Autorka: Anastasiia Knyha, nr albumu 106230
 
-## Planowana macierz konwersji
+Program zamienia pliki z jednego formatu na inny. Jest napisany w Pythonie, a na końcu będzie miał okienko w Tkinterze.
 
-| Grupa | Konwersja | Status |
+## Co program umie
+
+| Z | Na | Status |
 |---|---|---|
-| A | CSV → JSON | gotowe |
-| A | JSON → CSV | gotowe |
-| B | TXT → DOCX | planowane |
-| B | DOCX → TXT | planowane |
-| C | DOCX → PDF | planowane |
-| C | ODT → PDF | planowane |
+| CSV | JSON | działa |
+| JSON | CSV | działa |
+| TXT | DOCX | w planach |
+| DOCX | TXT | w planach |
+| DOCX | PDF | w planach |
+| ODT | PDF | w planach |
 
-## Zasady CSV ↔ JSON
+## Jak uruchomić
 
-- Kodowanie: UTF-8 (pliki z BOM z Excela też są obsługiwane). Wynikowy CSV zapisywany jest z BOM, aby Excel poprawnie pokazywał polskie znaki.
-- CSV: separator przecinek, pierwszy wiersz to nagłówki, nazwy kolumn muszą być unikalne, każdy wiersz musi mieć tyle kolumn co nagłówek.
-- JSON: niepusta lista obiektów z prostymi wartościami (tekst, liczba, null), np. `[{"imię": "Anna", "wiek": 20}]`. Zagnieżdżone obiekty i listy nie są obsługiwane.
-- CSV → JSON: wszystkie wartości zapisywane są jako tekst, puste komórki jako `""`.
-- JSON → CSV: kolumny w kolejności pierwszego wystąpienia; brakujące pola i `null` dają pustą komórkę.
+Na razie program działa z terminala:
 
-## Uruchomienie bez GUI
+```
+python3 cli.py <plik> <format> <folder>
+```
+
+Przykład:
 
 ```
 python3 cli.py samples/osoby.csv json wyniki
 ```
+
+Wynik zapisuje się w folderze `wyniki`. Jeśli taki plik już istnieje, program nie nadpisuje go, tylko dodaje numer do nazwy, np. `osoby_1.json`.
+
+## Jakie pliki CSV i JSON są obsługiwane
+
+- Pliki muszą być w kodowaniu UTF-8, żeby polskie znaki działały poprawnie.
+- W CSV pierwszy wiersz to nazwy kolumn, a wartości są oddzielone przecinkami.
+- JSON musi być listą obiektów, na przykład:
+
+```json
+[
+  {"imię": "Anna", "wiek": 20},
+  {"imię": "Ewa", "wiek": 28}
+]
+```
+
+- Puste pola zostają puste.
+- Kolejność kolumn się nie zmienia.
+- Jeśli plik jest uszkodzony, program nie wyłącza się, tylko pokazuje komunikat, co jest nie tak.
+
+## Pliki testowe
+
+W folderze `samples` są przykładowe pliki:
+
+- `osoby.csv` – dane z polskimi znakami i pustymi polami
+- `produkty.json` – obiekty z różnymi polami
+- `uszkodzony.json` – celowo zepsuty plik, do sprawdzenia błędów
+- `notatka.txt` – tekst z kilkoma akapitami
+
+## Wykorzystanie AI
+
+Przy pracy korzystałam z pomocy AI (Claude): do wyjaśnienia zadania, podziału pracy na etapy i pomocy przy pisaniu kodu. Cały kod przeczytałam, przetestowałam i rozumiem, jak działa.

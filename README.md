@@ -59,5 +59,4 @@ W folderze `samples` są przykładowe pliki:
 - `notatka.txt` – tekst z kilkoma akapitami
 
 ## Wykorzystanie AI
-
-Przy pracy korzystałam z pomocy AI (Claude): do wyjaśnienia zadania, podziału pracy na etapy i pomocy przy pisaniu kodu. Cały kod przeczytałam, przetestowałam i rozumiem, jak działa.
+Przy pracy korzystałam z pomocy AI (Claude). Szczegóły są w pliku docs/raport-lab2.md.

@@ -1,0 +1,5 @@
+[
+  {"produkt": "Jabłka", "cena": 3.5, "kraj": "Polska"},
+  {"produkt": "Gruszki", "cena": null},
+  {"produkt": "Śliwki", "cena": 4, "kraj": "Węgry", "uwagi": "żółte"}
+]

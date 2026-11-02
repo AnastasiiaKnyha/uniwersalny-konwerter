@@ -19,6 +19,7 @@ Program zamienia pliki z jednego formatu na inny. Jest napisany w Pythonie, a na
 ## Czego potrzebuje program
 
 - Python 3.9 lub nowszy
+- Tkinter, jest wbudowany w Pythona. Na Macu najlepiej użyć Pythona ze strony python.org, bo systemowy Python ma starą wersję Tkintera
 - biblioteka python-docx, jest w pliku requirements.txt
 - LibreOffice, potrzebny tylko do zamiany na PDF
 
@@ -44,20 +45,27 @@ export LIBREOFFICE_PATH="/Applications/LibreOffice.app/Contents/MacOS/soffice"
 
 ## Jak uruchomić
 
-Na razie program działa z terminala
+Program uruchamia się z okienkiem
+
+```
+python3 app.py
+```
+
+W okienku wybierz plik, folder zapisu i format, a potem kliknij Konwertuj. Lista formatów pokazuje tylko te konwersje, które działają dla wybranego pliku. Jeśli plik wynikowy już istnieje, program zapyta, czy go nadpisać, czy zapisać pod nową nazwą.
+
+Program można też uruchomić bez okienka, z terminala
 
 ```
 python3 cli.py <plik> <format> <folder>
 ```
 
-Przykłady
+Na przykład
 
 ```
 python3 cli.py samples/osoby.csv json wyniki
-python3 cli.py samples/notatka.docx pdf wyniki
 ```
 
-Wynik zapisuje się we wskazanym folderze. Jeśli taki plik już istnieje, program nie nadpisuje go, tylko dodaje numer do nazwy, np. `osoby_1.json`.
+W wersji z terminala program nigdy nie nadpisuje plików, tylko dodaje numer do nazwy, np. `osoby_1.json`.
 
 ## Jak działają konwersje
 

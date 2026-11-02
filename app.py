@@ -1,9 +1,11 @@
+import queue
+import threading
 import tkinter as tk
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from konwerter.errors import ConversionError
-from konwerter.registry import REGISTRY, available_targets, execute
+from konwerter.registry import REGISTRY, available_targets, execute, validate
 
 
 class App(tk.Tk):
@@ -17,6 +19,9 @@ class App(tk.Tk):
         self.folder_var = tk.StringVar()
         self.format_var = tk.StringVar()
         self.status_var = tk.StringVar(value="Wybierz plik do konwersji.")
+
+        # the worker thread puts its result here
+        self.results = queue.Queue()
 
         self.create_widgets()
         self.update_button()
@@ -46,6 +51,10 @@ class App(tk.Tk):
         # row 3: start button
         self.convert_button = ttk.Button(frame, text="Konwertuj", command=self.start_conversion)
         self.convert_button.grid(row=3, column=0, columnspan=3, pady=(12, 4), sticky="ew")
+
+        # row 4: progress bar, it moves only during conversion
+        self.progress = ttk.Progressbar(frame, mode="determinate")
+        self.progress.grid(row=4, column=0, columnspan=3, sticky="ew", pady=4)
 
         # row 5: status text
         ttk.Label(frame, textvariable=self.status_var, wraplength=520).grid(
@@ -121,15 +130,84 @@ class App(tk.Tk):
         output_dir = Path(self.folder_var.get())
         target_format = self.format_var.get()
 
+        # check everything before we start
         try:
-            target = execute(source, target_format, output_dir)
+            validate(source, target_format, output_dir)
         except ConversionError as error:
-            self.status_var.set(f"Błąd. {error}")
             messagebox.showerror("Błąd", str(error))
             return
 
-        self.status_var.set(f"Gotowe. Zapisano plik {target}")
-        messagebox.showinfo("Gotowe", f"Konwersja zakończona.\n\nZapisano plik\n{target}")
+        # ask before overwriting an existing file
+        overwrite = False
+        target = output_dir / (source.stem + target_format)
+        if target.exists():
+            answer = messagebox.askyesnocancel(
+                "Plik już istnieje",
+                f"Plik {target.name} już istnieje.\n\n"
+                "Tak  nadpisz plik\n"
+                "Nie  zapisz pod nową nazwą\n"
+                "Anuluj  nie rób nic",
+            )
+            # none means cancel
+            if answer is None:
+                return
+            overwrite = answer
+
+        self.set_working(True)
+        self.status_var.set("Trwa konwersja, proszę czekać...")
+
+        # long work runs in a separate thread, so the window does not freeze
+        worker = threading.Thread(
+            target=self.run_conversion,
+            args=(source, target_format, output_dir, overwrite),
+            daemon=True,
+        )
+        worker.start()
+        self.after(100, self.check_result)
+
+    def run_conversion(self, source: Path, target_format: str, output_dir: Path, overwrite: bool) -> None:
+        # this runs in the worker thread, so no window changes here
+        try:
+            target = execute(source, target_format, output_dir, overwrite)
+            self.results.put(("ok", str(target)))
+        except ConversionError as error:
+            self.results.put(("error", str(error)))
+        except Exception as error:
+            # unexpected problem, app should not crash
+            self.results.put(("error", f"Nieoczekiwany błąd: {error}"))
+
+    def check_result(self) -> None:
+        try:
+            kind, text = self.results.get_nowait()
+        except queue.Empty:
+            # no result yet, check again in 100 ms
+            self.after(100, self.check_result)
+            return
+
+        self.set_working(False)
+        if kind == "ok":
+            self.status_var.set(f"Gotowe. Zapisano plik {text}")
+            messagebox.showinfo("Gotowe", f"Konwersja zakończona.\n\nZapisano plik\n{text}")
+        else:
+            self.status_var.set(f"Błąd. {text}")
+            messagebox.showerror("Błąd", text)
+
+    def set_working(self, working: bool) -> None:
+        if working:
+            # block buttons during conversion
+            self.progress.config(mode="indeterminate")
+            self.progress.start(10)
+            self.file_button.config(state="disabled")
+            self.folder_button.config(state="disabled")
+            self.format_box.config(state="disabled")
+            self.convert_button.config(state="disabled")
+        else:
+            self.progress.stop()
+            self.progress.config(mode="determinate", value=0)
+            self.file_button.config(state="normal")
+            self.folder_button.config(state="normal")
+            self.format_box.config(state="readonly")
+            self.update_button()
 
 
 if __name__ == "__main__":

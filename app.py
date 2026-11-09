@@ -1,3 +1,4 @@
+import logging
 import queue
 import threading
 import tkinter as tk
@@ -5,7 +6,10 @@ from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
 from konwerter.errors import ConversionError
+from konwerter.logger import setup_logging
 from konwerter.registry import REGISTRY, available_targets, execute, validate
+
+logger = logging.getLogger(__name__)
 
 
 class App(tk.Tk):
@@ -134,6 +138,7 @@ class App(tk.Tk):
         try:
             validate(source, target_format, output_dir)
         except ConversionError as error:
+            logger.warning(f"Błędny wybór w oknie. {error}")
             messagebox.showerror("Błąd", str(error))
             return
 
@@ -174,6 +179,7 @@ class App(tk.Tk):
             self.results.put(("error", str(error)))
         except Exception as error:
             # unexpected problem, app should not crash
+            logger.exception("Nieoczekiwany błąd podczas konwersji")
             self.results.put(("error", f"Nieoczekiwany błąd: {error}"))
 
     def check_result(self) -> None:

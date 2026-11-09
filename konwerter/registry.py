@@ -1,10 +1,14 @@
+import logging
 import os
+import time
 from pathlib import Path
 
 from konwerter.data import csv_to_json, json_to_csv
 from konwerter.errors import ConversionError
 from konwerter.office import docx_to_pdf, odt_to_pdf
 from konwerter.text import docx_to_txt, txt_to_docx
+
+logger = logging.getLogger(__name__)
 
 # (source format, target format) -> function that converts
 # to add a new pair just add one line here
@@ -60,9 +64,19 @@ def make_target_path(source: Path, target_format: str, output_dir: Path, overwri
 
 def execute(source: Path, target_format: str, output_dir: Path, overwrite: bool = False) -> Path:
     target_format = target_format.lower()
-    validate(source, target_format, output_dir)
+    start = time.perf_counter()
 
-    target = make_target_path(source, target_format, output_dir, overwrite)
-    convert = REGISTRY[(source.suffix.lower(), target_format)]
-    convert(source, target)
+    try:
+        validate(source, target_format, output_dir)
+        target = make_target_path(source, target_format, output_dir, overwrite)
+        convert = REGISTRY[(source.suffix.lower(), target_format)]
+        convert(source, target)
+    except ConversionError as error:
+        # save the error in the log file, then pass it on to gui or cli
+        logger.error(f"Błąd konwersji {source} na {target_format}. {error}")
+        raise
+
+    # how long the conversion took
+    seconds = time.perf_counter() - start
+    logger.info(f"Konwersja {source} na {target_format} zakończona w {seconds:.2f} s. Wynik {target}")
     return target

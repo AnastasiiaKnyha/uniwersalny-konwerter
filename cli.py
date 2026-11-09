@@ -2,11 +2,13 @@ import sys
 from pathlib import Path
 
 from konwerter.errors import ConversionError
+from konwerter.logger import setup_logging
 from konwerter.registry import execute
 
 
 def main() -> None:
     # we need exactly 3 arguments
+    setup_logging()
     if len(sys.argv) != 4:
         print("Użycie: python cli.py <plik> <format> <katalog>")
         print("Przykład: python cli.py samples/osoby.csv json wyniki")
